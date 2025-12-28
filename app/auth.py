@@ -12,13 +12,16 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(
+    schemes=["pbkdf2_sha256"],
+    deprecated="auto",
+)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 FAKE_USER = {
-    'username': 'admin'
-    'password_hash': pwd_context.hash("secret"),
+    'username': 'admin',
+    'password': pwd_context.hash("secret")
 }
 
 def verify_password(plain_password, hashed_password):
@@ -27,7 +30,7 @@ def verify_password(plain_password, hashed_password):
 def authenticate_user(username: str, password: str):
     if username != FAKE_USER['username']:
         return None
-    if password != FAKE_USER['password_hash']:
+    if not verify_password(password, FAKE_USER['password']):
         return None
     return {"username": username}
 
